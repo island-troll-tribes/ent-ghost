@@ -2177,6 +2177,14 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				m_Exiting = true;
 
 			//
+			// !balance
+			//
+
+			else if( Command == "balance" && ( RootAdminCheck || IsOwner( User ) ) ) {
+				BalanceSlots( );
+			}
+
+			//
 			// !UNLOCK
 			//
 
