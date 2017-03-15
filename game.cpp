@@ -43,6 +43,7 @@
 
 #include <cmath>
 #include <string.h>
+#include <sstream>
 #include <time.h>
 
 //
@@ -2571,17 +2572,19 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	else if( Command == "c" && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
 	{
 		string StatsUser = User;
-		string StatsCateogry = m_Map->GetMapStatsW3MMDCategory( );
+		string StatsCategory = m_Map->GetMapStatsW3MMDCategory( );
 
 		string MaybeUser, MaybeCategory;
 
-		istringstream iss(payload);
-		iss >> MayberUser >> MaybeCategory;
+		stringstream iss;
+		iss << payload;
+		iss >> MaybeUser;
+		iss >> MaybeCategory;
 
-		if( !MayberUser.empty( ) )
+		if( !MaybeUser.empty( ) )
 			StatsUser = MaybeUser;
 
-		if( !MayberCategory.empty( ) )
+		if( !MaybeCategory.empty( ) )
 			StatsCategory = MaybeCategory;
 
 		string StatsRealm = "";
@@ -2605,7 +2608,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 		if( !Payload.empty( ) )
 			StatsUser = Payload;
-		
+
 		string StatsRealm = "";
 		GetStatsUser( &StatsUser, &StatsRealm );
 
