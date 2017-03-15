@@ -4847,8 +4847,8 @@ void CBaseGame :: ShowTeamScores( )
 
 	if( !Team1.empty( ) && !Team2.empty( ) )
 	{
-		string Team1String = "Sentinel/West";
-		string Team2String = "Scourge/East";
+		string Team1String = "North West";
+		string Team2String = "South East";
 
 		for( int i = 0; i < Team1.size( ); i++ )
 		{
