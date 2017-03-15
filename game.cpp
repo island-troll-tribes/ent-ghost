@@ -2565,6 +2565,37 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	}
 
 	//
+	// !STATSITT
+	//
+
+	else if( Command == "c" && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
+	{
+		string StatsUser = User;
+		string StatsCateogry = m_Map->GetMapStatsW3MMDCategory( );
+
+		string MaybeUser, MaybeCategory;
+
+		istringstream iss(payload);
+		iss >> MayberUser >> MaybeCategory;
+
+		if( !MayberUser.empty( ) )
+			StatsUser = MaybeUser;
+
+		if( !MayberCategory.empty( ) )
+			StatsCategory = MaybeCategory;
+
+		string StatsRealm = "";
+		GetStatsUser( &StatsUser, &StatsRealm );
+
+		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+			m_PairedWPSChecks.push_back( PairedWPSCheck( string( ), m_GHost->m_DB->ThreadedW3MMDPlayerSummaryCheck( StatsUser, StatsRealm, StatsCategory ) ) );
+		else
+			m_PairedWPSChecks.push_back( PairedWPSCheck( User, m_GHost->m_DB->ThreadedW3MMDPlayerSummaryCheck( StatsUser, StatsRealm, StatsCategory ) ) );
+
+		player->SetStatsDotASentTime( GetTime( ) );
+	}
+
+	//
 	// !STATS
 	//
 
