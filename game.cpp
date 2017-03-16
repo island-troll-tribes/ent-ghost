@@ -2569,7 +2569,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 	// !STATSITT
 	//
 
-	else if( Command == "c" && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
+	else if( Command == "s" && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
 	{
 		string StatsUser = User;
 		string StatsCategory = m_Map->GetMapStatsW3MMDCategory( );
