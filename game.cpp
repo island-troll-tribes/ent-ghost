@@ -2278,12 +2278,16 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					delete m_Stats;
 				}
 
-				if ( Payload == "none" || Payload == "off" )
+				if ( Payload == "none" || Payload == "off" || Payload == "disable" )
 				{
+					CONSOLE_Print( "[GAME: " + m_GameName + "] removed w3mmd category (was " + m_MapType + ")" );
+					SendAllChat( "Stats category disabled" );
 					m_MapType = "";
 				}
 				else
 				{
+					CONSOLE_Print( "[GAME: " + m_GameName + "] w3mmd category set to [" + Payload + "] (was " + m_MapType + ")" );
+					SendAllChat( "Stats category set to <" + Payload + ">" );
 					m_Stats = new CStatsW3MMD( this, Payload, "" );
 					m_MapType = Payload;
 				}
