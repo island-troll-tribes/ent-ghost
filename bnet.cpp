@@ -179,7 +179,7 @@ CBNET :: ~CBNET( )
         for( vector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); ++i )
 		m_GHost->m_Callables.push_back( i->second );
 
-        for( vector<PairedVPSCheck> :: iterator i = m_PairedVPSChecks.begin( ); i != m_PairedVPSChecks.end( ); ++i )
+        for( vector<PairedWPSCheck> :: iterator i = m_PairedWPSChecks.begin( ); i != m_PairedWPSChecks.end( ); ++i )
 		m_GHost->m_Callables.push_back( i->second );
 
 	if( m_CallableAdminList )
@@ -396,54 +396,35 @@ bool CBNET :: Update( void *fd, void *send_fd )
                         ++i;
 	}
 
-	for( vector<PairedVPSCheck> :: iterator i = m_PairedVPSChecks.begin( ); i != m_PairedVPSChecks.end( ); )
+	for( vector<PairedWPSCheck> :: iterator i = m_PairedWPSChecks.begin( ); i != m_PairedWPSChecks.end( ); )
 	{
 		if( i->second->GetReady( ) )
 		{
-			CDBVampPlayerSummary *VampPlayerSummary = i->second->GetResult( );
+			CDBW3MMDPlayerSummary *W3MMDPlayerSummary = i->second->GetResult( );
+			string StatsName = i->second->GetName( );
+			
+			if( !i->second->GetRealm( ).empty( ) )
+				StatsName += "@" + i->second->GetRealm( );
 
-			if( VampPlayerSummary )
+			if( W3MMDPlayerSummary && W3MMDPlayerSummary->GetTotalGames( ) > 0 )
 			{
-				double MinCommandCenter = VampPlayerSummary->GetMinCommandCenter( ) / 60.0;
-				double AvgCommandCenter = VampPlayerSummary->GetAvgCommandCenter( ) / 60.0;
-				double MinBase = VampPlayerSummary->GetMinBase( ) / 60.0;
-				double AvgBase = VampPlayerSummary->GetAvgBase( ) / 60.0;
+				string CategoryName = W3MMDPlayerSummary->GetCategory( );
+				
+				string Summary = "[" + StatsName + "] has played " + UTIL_ToString( W3MMDPlayerSummary->GetTotalGames( ) ) + " <" + CategoryName + "> games here (ELO: " + UTIL_ToString( W3MMDPlayerSummary->GetScore( ), 2 ) + "; rank: " + UTIL_ToString( W3MMDPlayerSummary->GetRank( ) ) + "). W/L: " + UTIL_ToString( W3MMDPlayerSummary->GetTotalWins( ) ) + "/" + UTIL_ToString( W3MMDPlayerSummary->GetTotalLosses( ) ) + ".";
 
-				string StrMinCC = UTIL_ToString(MinCommandCenter, 2);
-				string StrAvgCC = UTIL_ToString(AvgCommandCenter, 2);
-				string StrMinBase = UTIL_ToString(MinBase, 2);
-				string StrAvgBase = UTIL_ToString(AvgBase, 2);
-
-				if(MinCommandCenter <= 0) StrMinCC = "none";
-				if(AvgCommandCenter <= 0) StrAvgCC = "none";
-				if(MinBase <= 0) StrMinBase = "none";
-				if(AvgBase <= 0) StrAvgBase = "none";
-				QueueChatCommand( m_GHost->m_Language->HasPlayedVampGamesWithThisBot( i->second->GetName( ),
-						UTIL_ToString(VampPlayerSummary->GetTotalGames( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalHumanGames( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalVampGames( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalHumanWins( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalVampWins( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalHumanLosses( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalVampLosses( )),
-						UTIL_ToString(VampPlayerSummary->GetTotalVampKills( )),
-						StrMinCC,
-						StrAvgCC,
-						StrMinBase,
-						StrAvgBase),
-					i->first, !i->first.empty() );
+				QueueChatCommand( Summary, i->first, !i->first.empty() );
 			}
 			else
 			{
-				QueueChatCommand( m_GHost->m_Language->HasntPlayedVampGamesWithThisBot( i->second->GetName( ) ), i->first, !i->first.empty() );
+				QueueChatCommand( "[" + StatsName + "] hasn't played any games of the specified type here." );
 			}
 
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
-			i = m_PairedVPSChecks.erase( i );
+			i = m_PairedWPSChecks.erase( i );
 		}
 		else
-			++i;
+                        ++i;
 	}
 
 	// refresh the admin list every hour
@@ -1051,7 +1032,7 @@ void CBNET :: ProcessChatEvent( CIncomingChatEvent *chatEvent )
 			SpoofAdd.sendMessage = false;
 			SpoofAdd.failMessage = string( );
 
-			if( Message == "s" || Message == "sc" || Message == "spoof" || Message == "check" || Message == "spoofcheck" )
+			if( Message == "sc" || Message == "spoof" || Message == "check" || Message == "spoofcheck" )
 			{
 				Success = true;
 				SpoofAdd.sendMessage = true;
@@ -2082,20 +2063,34 @@ void CBNET :: BotCommand( string Message, string User, bool Whisper, bool ForceR
 		}
 
 		//
-		// !VAMPSTATS
+		// !S
 		//
 
-		else if( Command == "vampstats" || Command == "vs" )
+		else if( Command == "s" )
 		{
 			string StatsUser = User;
+			string StatsCategory = "practice";
 
 			if( !Payload.empty( ) )
-				StatsUser = Payload;
+			{
+				string MaybeUser, MaybeCategory;
+
+				stringstream iss;
+				iss << Payload;
+				iss >> MaybeUser;
+				iss >> MaybeCategory;
+
+				if( !MaybeUser.empty( ) )
+					StatsUser = MaybeUser;
+
+				if( !MaybeCategory.empty( ) )
+					StatsCategory = MaybeCategory;
+			}
 
 			// check for potential abuse
 
 			if( !StatsUser.empty( ) && StatsUser.size( ) < 16 && StatsUser[0] != '/' )
-				m_PairedVPSChecks.push_back( PairedVPSCheck( Whisper ? User : string( ), m_GHost->m_DB->ThreadedVampPlayerSummaryCheck( StatsUser ) ) );
+				m_PairedWPSChecks.push_back( PairedWPSCheck( Whisper ? User : string( ), m_GHost->m_DB->ThreadedW3MMDPlayerSummaryCheck( StatsUser, string( ), StatsCategory ) ) );
 		}
 
         //
