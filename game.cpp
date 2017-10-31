@@ -2270,6 +2270,24 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 
 				HideCommand = true;
 			}
+
+			else if( ( Command == "category" || Command == "c" ) && !m_CountDownStarted && ( RootAdminCheck || IsOwner( User ) ) )
+			{
+				if( m_Stats )
+				{
+					delete m_Stats;
+				}
+
+				if ( Payload == "none" || Payload == "off" )
+				{
+					m_MapType = "";
+				}
+				else
+				{
+					m_Stats = new CStatsW3MMD( this, Payload, "" );
+					m_MapType = Payload;
+				}
+			}
 		}
 		else
 		{
