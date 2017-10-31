@@ -38,6 +38,9 @@ all: $(OBJS) $(COBJS) $(PROGS)
 ./ghost++: $(OBJS) $(COBJS)
 	$(C++) -o ./ghost++ $(OBJS) $(COBJS) $(LFLAGS)
 
+install: $(PROGS)
+	sudo cp $(PROGS) /usr/local/bin/
+
 clean:
 	rm -f $(OBJS) $(COBJS) $(PROGS)
 
