@@ -796,7 +796,7 @@ void CGame :: EventPlayerDeleted( CGamePlayer *player )
 		}
 		
 		// if this was early leave, suggest to draw the game
-		if( !m_MapType.empty( ) && m_GameTicks < 1000 * 60 && false )
+		if( !m_MapType.empty( ) && m_GameTicks < 1000 * 60 )
 			SendAllChat( "Use !draw to vote to draw the game." );
 		
 		// possibly autoban if the leave method caused this player to get autoban enabled
