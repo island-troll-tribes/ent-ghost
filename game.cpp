@@ -2276,6 +2276,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 				if( m_Stats )
 				{
 					delete m_Stats;
+					m_Stats = NULL;
 				}
 
 				if ( Payload == "none" || Payload == "off" || Payload == "disable" )
