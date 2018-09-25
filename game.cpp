@@ -2279,7 +2279,7 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 					m_Stats = NULL;
 				}
 
-				if ( Payload == "none" || Payload == "off" || Payload == "disable" )
+				if ( Payload == "none" || Payload == "off" || Payload == "disable" || Payload == "" )
 				{
 					CONSOLE_Print( "[GAME: " + m_GameName + "] removed w3mmd category (was " + m_MapType + ")" );
 					SendAllChat( "Stats category disabled" );
@@ -2578,15 +2578,13 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
     // !VOTESTART
     //
     
-    bool votestartAuth = player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) );
-    bool votestartAutohost = m_GameState == GAME_PUBLIC && !m_GHost->m_AutoHostGameName.empty( ) && m_GHost->m_AutoHostMaximumGames != 0 && m_GHost->m_AutoHostAutoStartPlayers != 0 && m_AutoStartPlayers != 0;
-    if( Command == "votestart" && !m_CountDownStarted && (votestartAuth || votestartAutohost || !m_GHost->m_VoteStartAutohostOnly))
+    if( Command == "votestart" && !m_CountDownStarted )
         {
 
             if( !m_GHost->m_CurrentGame->GetLocked( ) )
                 {
                     if(m_StartedVoteStartTime == 0) { //need >minplayers or admin to START a votestart
-                        if (GetNumHumanPlayers() < m_GHost->m_VoteStartMinPlayers && !votestartAuth) { //need at least eight players to votestart
+                        if (GetNumHumanPlayers() < m_GHost->m_VoteStartMinPlayers) { //need at least eight players to votestart
                             SendChat( player, "You cannot use !votestart until there are " + UTIL_ToString(m_GHost->m_VoteStartMinPlayers) + " or more players in the game!" );
                             return false;
                         }
